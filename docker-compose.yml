@@ -1,0 +1,38 @@
+version: '3.1'
+
+services: 
+  node-concilicen:
+    build: .
+    container_name: concilicen-app
+    image: onestech/concilicen
+    ports:
+      - 4357:4000
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+    # volumes:
+    #   - ./:/usr/src/app
+    environment:
+      - 'PORT=4000'
+      - 'DATABASE_URL=postgresql://postgres:*@postgres-db-concilicen/concilicen-app?schema=concilicen'
+      - 'ORIGIN_WHITELIST=http://localhost:4357;http://192.168.101.178:4357'
+      - 'TZ=America/Asuncion'
+
+    command: ["sh", "-c", "npx prisma db push && npm start"] 
+    restart: always
+    depends_on:
+      - postgres-db-concilicen
+
+  postgres-db-concilicen:
+    container_name: postgres-db-concilicen
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - db-postgres-concilicen:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=*
+
+volumes:
+  db-postgres-concilicen:
